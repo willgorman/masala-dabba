@@ -1,13 +1,14 @@
 require 'sinatra'
+$stdout.sync = true
 
 get '/' do
   "Hello World!"
 end
 
-get '/parse' do
-  200
-end
-
 post '/parse' do
-  puts params
+  puts params[:from]
+  puts params[:to]
+  puts params[:subject]
+  puts params[:text]
+  puts params[:html]
 end
