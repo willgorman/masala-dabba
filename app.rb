@@ -1,6 +1,6 @@
 require 'sinatra'
 require 'pony'
-$stdout.sync = true
+require 'nokogiri'
 
 Pony.options = {
   :via => :smtp,
@@ -16,18 +16,18 @@ Pony.options = {
 }
 
 get '/' do
-  "Hello World!"
+  "Masala dabba: Email Paprika grocery lists to Remember the Milk."
 end
 
 post '/parse' do
-  puts params[:from]
-  puts params[:to]
-  puts params[:subject]
-  puts params[:html]
+  list = Nokogiri::HTML(params[:html])
+  # Seems to be safe to assume that all text nodes in forms are list items
+  # Prefixing the items with "~" disables Smart Add, which can interpret things
+  # like "1/2 gallon milk" as a task due on January 2nd
+  items = list.xpath("//form").children.select{|node| node.text?}.collect{|node| "~#{node.content}"}
   Pony.mail({
-    :to => ENV['TEST_EMAIL'],
-    :from => 'dabba',
+    :to => ENV['RTM_EMAIL'],
     :subject => ENV['RTM_LIST'],
-    :body => 'TESTING'
+    :body => items.join("\n")
     })
 end
